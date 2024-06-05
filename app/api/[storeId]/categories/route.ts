@@ -67,9 +67,6 @@ export async function GET(
       where: {
         storeId: params.storeId,
       },
-      include: {
-        banner: true
-      },
     });
 
     return NextResponse.json(categories);
