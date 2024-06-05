@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id      String    @id @default(uuid())
+  name    String
+  userId  String
+  banners Banner[] @relation("StoreToBanner")
+  categories Category[] @relation("StoreToCategory")
+  product Product[] @relation("StoreToProduct")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Banner {
+  id      String @id @default(uuid())
+  storeId String
+  store   Store @relation("StoreToBanner", fields: [storeId], references: [id])
+  label   String
+  imageUrl  String
+  categories  Category[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+}
+
+model Category {
+  id      String @id @default(uuid())
+  storeId String
+  store   Store @relation("StoreToCategory", fields: [storeId], references: [id])
+  bannerId  String
+  banner Banner @relation(fields: [bannerId], references: [id])
+  products  Product[] @relation("CategoryToProduct")
+  name    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+  @@index([bannerId])
+}
+
+model Product {
+  id      String @id @default(uuid())
+  storeId String
+  store   Store @relation("StoreToProduct", fields: [storeId], references: [id])
+  categoryId  String
+  category  Category @relation("CategoryToProduct", fields: [categoryId], references: [id])
+  name    String
+  price   Decimal
+  isFeatured  Boolean @default(false)
+  isArchived  Boolean @default(false)
+  images  Image[]
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+  @@index([categoryId])
+}
+
+model Image {
+  id        String @unique @default(uuid())
+  productId String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
